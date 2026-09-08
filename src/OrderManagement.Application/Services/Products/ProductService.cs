@@ -75,4 +75,13 @@ public class ProductService
             CreatedAt = product.CreatedAt
         };
     }
+
+    public async Task<ProductListResponse> GetListAsync(
+        ProductListRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        return await _productRepository.GetListAsync(
+            request,
+            cancellationToken);
+    }
 }
