@@ -1,5 +1,7 @@
 ﻿using System.Net;
-using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using OrderManagement.Application.Exceptions;
 
 namespace OrderManagement.Api.Middleware;
@@ -31,22 +33,67 @@ public class ExceptionHandlingMiddleware
     {
         var statusCode = exception switch
         {
-            NotFoundException => HttpStatusCode.NotFound,
-            ValidationException => HttpStatusCode.BadRequest,
-            ConflictException => HttpStatusCode.Conflict,
-            _ => HttpStatusCode.InternalServerError
+            NotFoundException => (int)HttpStatusCode.NotFound,
+            ValidationException => (int)HttpStatusCode.BadRequest,
+            ConflictException => (int)HttpStatusCode.Conflict,
+
+            DbUpdateException dbException
+                when IsUniqueConstraintViolation(dbException)
+                => (int)HttpStatusCode.Conflict,
+
+            _ => (int)HttpStatusCode.InternalServerError
         };
 
-        context.Response.StatusCode = (int)statusCode;
-        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = statusCode;
 
-        var response = new
+        var problemDetails = new ProblemDetails
         {
-            statusCode = (int)statusCode,
-            message = exception.Message
+            Status = statusCode,
+
+            Title = exception switch
+            {
+                NotFoundException => "Resource Not Found",
+                ValidationException => "Validation Error",
+                ConflictException => "Conflict",
+
+                DbUpdateException dbException
+                    when IsUniqueConstraintViolation(dbException)
+                    => "Conflict",
+
+                _ => "Internal Server Error"
+            },
+
+            Detail = exception switch
+            {
+                NotFoundException
+                    => exception.Message,
+
+                ValidationException
+                    => exception.Message,
+
+                ConflictException
+                    => exception.Message,
+
+                DbUpdateException dbException
+                    when IsUniqueConstraintViolation(dbException)
+                    => "A resource with the same unique value already exists.",
+
+                _ => "An unexpected error occurred."
+            },
+
+            Instance = context.Request.Path
         };
 
-        await context.Response.WriteAsync(
-            JsonSerializer.Serialize(response));
+        context.Response.ContentType = "application/problem+json";
+
+        await context.Response.WriteAsJsonAsync(problemDetails);
+    }
+
+    private static bool IsUniqueConstraintViolation(
+        DbUpdateException exception)
+    {
+        return exception.InnerException is SqlException sqlException
+            && (sqlException.Number == 2601
+                || sqlException.Number == 2627);
     }
 }
