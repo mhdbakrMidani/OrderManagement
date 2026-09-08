@@ -9,7 +9,7 @@ public interface IOrderRepository
         int id,
         CancellationToken cancellationToken = default);
 
-    Task<OrderListResponse> GetListAsync(
+    Task<OrderListResult> GetListAsync(
         OrderListRequest request,
         CancellationToken cancellationToken = default);
 

@@ -1,6 +1,7 @@
 ﻿using OrderManagement.Application.DTOs.Customers;
 using OrderManagement.Application.Interfaces;
 using OrderManagement.Application.Interfaces.Repositories;
+using OrderManagement.Application.Mappings;
 using OrderManagement.Domain.Entities;
 
 namespace OrderManagement.Application.Services.Customers;
@@ -36,13 +37,7 @@ public class CustomerService
         await _unitOfWork.SaveChangesAsync(
             cancellationToken);
 
-        return new CustomerResponse
-        {
-            Id = customer.Id,
-            Name = customer.Name,
-            Email = customer.Email,
-            CreatedAt = customer.CreatedAt
-        };
+        return CustomerMapper.ToResponse(customer);
     }
 
     public async Task<CustomerResponse?> GetByIdAsync(
@@ -58,12 +53,6 @@ public class CustomerService
             return null;
         }
 
-        return new CustomerResponse
-        {
-            Id = customer.Id,
-            Name = customer.Name,
-            Email = customer.Email,
-            CreatedAt = customer.CreatedAt
-        };
+        return CustomerMapper.ToResponse(customer);
     }
 }

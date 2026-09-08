@@ -13,7 +13,7 @@ public interface IProductRepository
         IEnumerable<int> ids,
         CancellationToken cancellationToken = default);
 
-    Task<ProductListResponse> GetListAsync(
+    Task<ProductListResult> GetListAsync(
         ProductListRequest request,
         CancellationToken cancellationToken = default);
 

@@ -1,6 +1,7 @@
 ﻿using OrderManagement.Application.DTOs.Products;
 using OrderManagement.Application.Interfaces;
 using OrderManagement.Application.Interfaces.Repositories;
+using OrderManagement.Application.Mappings;
 using OrderManagement.Domain.Entities;
 
 namespace OrderManagement.Application.Services.Products;
@@ -39,16 +40,7 @@ public class ProductService
         await _unitOfWork.SaveChangesAsync(
             cancellationToken);
 
-        return new ProductResponse
-        {
-            Id = product.Id,
-            Name = product.Name,
-            SKU = product.SKU,
-            Price = product.Price,
-            StockQuantity = product.StockQuantity,
-            IsActive = product.IsActive,
-            CreatedAt = product.CreatedAt
-        };
+        return ProductMapper.ToResponse(product);
     }
 
     public async Task<ProductResponse?> GetByIdAsync(
@@ -64,24 +56,27 @@ public class ProductService
             return null;
         }
 
-        return new ProductResponse
-        {
-            Id = product.Id,
-            Name = product.Name,
-            SKU = product.SKU,
-            Price = product.Price,
-            StockQuantity = product.StockQuantity,
-            IsActive = product.IsActive,
-            CreatedAt = product.CreatedAt
-        };
+        return ProductMapper.ToResponse(product);
     }
 
     public async Task<ProductListResponse> GetListAsync(
         ProductListRequest request,
         CancellationToken cancellationToken = default)
     {
-        return await _productRepository.GetListAsync(
+        var result = await _productRepository.GetListAsync(
             request,
             cancellationToken);
+
+        return new ProductListResponse
+        {
+            Items = result.Items
+                .Select(ProductMapper.ToResponse)
+                .ToList(),
+
+            PageNumber = result.PageNumber,
+            PageSize = result.PageSize,
+            TotalCount = result.TotalCount,
+            TotalPages = result.TotalPages
+        };
     }
 }

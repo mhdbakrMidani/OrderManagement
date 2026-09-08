@@ -34,7 +34,7 @@ public class ProductRepository : IProductRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<ProductListResponse> GetListAsync(
+    public async Task<ProductListResult> GetListAsync(
         ProductListRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -89,21 +89,9 @@ public class ProductRepository : IProductRepository
         var totalPages = (int)Math.Ceiling(
             totalCount / (double)pageSize);
 
-        return new ProductListResponse
+        return new ProductListResult
         {
-            Items = products
-                .Select(x => new ProductResponse
-                {
-                    Id = x.Id,
-                    Name = x.Name,
-                    SKU = x.SKU,
-                    Price = x.Price,
-                    StockQuantity = x.StockQuantity,
-                    IsActive = x.IsActive,
-                    CreatedAt = x.CreatedAt
-                })
-                .ToList(),
-
+            Items = products,
             PageNumber = pageNumber,
             PageSize = pageSize,
             TotalCount = totalCount,

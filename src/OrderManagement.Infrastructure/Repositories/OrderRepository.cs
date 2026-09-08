@@ -27,7 +27,7 @@ public class OrderRepository : IOrderRepository
                 cancellationToken);
     }
 
-    public async Task<OrderListResponse> GetListAsync(
+    public async Task<OrderListResult> GetListAsync(
         OrderListRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -56,40 +56,13 @@ public class OrderRepository : IOrderRepository
         var totalPages = (int)Math.Ceiling(
             totalCount / (double)pageSize);
 
-        return new OrderListResponse
+        return new OrderListResult
         {
-            Items = orders
-                .Select(MapToResponse)
-                .ToList(),
-
+            Items = orders,
             PageNumber = pageNumber,
             PageSize = pageSize,
             TotalCount = totalCount,
             TotalPages = totalPages
-        };
-    }
-
-    private static OrderResponse MapToResponse(Order order)
-    {
-        return new OrderResponse
-        {
-            Id = order.Id,
-            CustomerId = order.CustomerId,
-            OrderDate = order.OrderDate,
-            Status = order.Status,
-            TotalAmount = order.TotalAmount,
-            CreatedAt = order.CreatedAt,
-
-            Items = order.Items
-                .Select(item => new OrderItemResponse
-                {
-                    Id = item.Id,
-                    ProductId = item.ProductId,
-                    Quantity = item.Quantity,
-                    UnitPrice = item.UnitPrice,
-                    TotalPrice = item.TotalPrice
-                })
-                .ToList()
         };
     }
 

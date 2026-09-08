@@ -2,6 +2,7 @@
 using OrderManagement.Application.Exceptions;
 using OrderManagement.Application.Interfaces;
 using OrderManagement.Application.Interfaces.Repositories;
+using OrderManagement.Application.Mappings;
 using OrderManagement.Domain.Entities;
 using OrderManagement.Domain.Enums;
 
@@ -143,7 +144,7 @@ public class OrderService
             await transaction.CommitAsync(
                 cancellationToken);
 
-            return MapToResponse(order);
+            return OrderMapper.ToResponse(order);
         }
         catch
         {
@@ -168,16 +169,28 @@ public class OrderService
                 "Order was not found.");
         }
 
-        return MapToResponse(order);
+        return OrderMapper.ToResponse(order);
     }
 
     public async Task<OrderListResponse> GetListAsync(
         OrderListRequest request,
         CancellationToken cancellationToken = default)
     {
-        return await _orderRepository.GetListAsync(
+        var result = await _orderRepository.GetListAsync(
             request,
             cancellationToken);
+
+        return new OrderListResponse
+        {
+            Items = result.Items
+                .Select(OrderMapper.ToResponse)
+                .ToList(),
+
+            PageNumber = result.PageNumber,
+            PageSize = result.PageSize,
+            TotalCount = result.TotalCount,
+            TotalPages = result.TotalPages
+        };
     }
 
     public async Task ConfirmAsync(
@@ -253,28 +266,5 @@ public class OrderService
 
             throw;
         }
-    }
-
-    private static OrderResponse MapToResponse(Order order)
-    {
-        return new OrderResponse
-        {
-            Id = order.Id,
-            CustomerId = order.CustomerId,
-            OrderDate = order.OrderDate,
-            Status = order.Status,
-            TotalAmount = order.TotalAmount,
-            CreatedAt = order.CreatedAt,
-            Items = order.Items
-                .Select(item => new OrderItemResponse
-                {
-                    Id = item.Id,
-                    ProductId = item.ProductId,
-                    Quantity = item.Quantity,
-                    UnitPrice = item.UnitPrice,
-                    TotalPrice = item.TotalPrice
-                })
-                .ToList()
-        };
     }
 }
