@@ -1,8 +1,15 @@
+using OrderManagement.Application.Services.Customers;
+using OrderManagement.Application.Services.Orders;
+using OrderManagement.Application.Services.Products;
 using OrderManagement.Infrastructure.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddInfrastructure(builder.Configuration);
+
+builder.Services.AddScoped<CustomerService>();
+builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<OrderService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
