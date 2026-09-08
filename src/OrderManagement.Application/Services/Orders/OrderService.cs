@@ -171,6 +171,15 @@ public class OrderService
         return MapToResponse(order);
     }
 
+    public async Task<OrderListResponse> GetListAsync(
+        OrderListRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        return await _orderRepository.GetListAsync(
+            request,
+            cancellationToken);
+    }
+
     public async Task ConfirmAsync(
         int id,
         CancellationToken cancellationToken = default)

@@ -41,4 +41,40 @@ public class OrdersController : ControllerBase
 
         return Ok(order);
     }
+
+    [HttpGet]
+    public async Task<ActionResult<OrderListResponse>> GetList(
+        [FromQuery] OrderListRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _orderService.GetListAsync(
+            request,
+            cancellationToken);
+
+        return Ok(result);
+    }
+
+    [HttpPost("{id:int}/confirm")]
+    public async Task<IActionResult> Confirm(
+        int id,
+        CancellationToken cancellationToken)
+    {
+        await _orderService.ConfirmAsync(
+            id,
+            cancellationToken);
+
+        return NoContent();
+    }
+
+    [HttpPost("{id:int}/cancel")]
+    public async Task<IActionResult> Cancel(
+        int id,
+        CancellationToken cancellationToken)
+    {
+        await _orderService.CancelAsync(
+            id,
+            cancellationToken);
+
+        return NoContent();
+    }
 }

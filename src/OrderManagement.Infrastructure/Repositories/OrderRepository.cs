@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using OrderManagement.Application.DTOs.Orders;
 using OrderManagement.Application.Interfaces.Repositories;
 using OrderManagement.Domain.Entities;
 using OrderManagement.Domain.Enums;
@@ -24,6 +25,72 @@ public class OrderRepository : IOrderRepository
             .FirstOrDefaultAsync(
                 x => x.Id == id,
                 cancellationToken);
+    }
+
+    public async Task<OrderListResponse> GetListAsync(
+        OrderListRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _context.Orders
+            .AsNoTracking()
+            .Include(x => x.Items)
+            .AsQueryable();
+
+        var totalCount = await query.CountAsync(
+            cancellationToken);
+
+        var pageNumber = request.PageNumber < 1
+            ? 1
+            : request.PageNumber;
+
+        var pageSize = request.PageSize < 1
+            ? 10
+            : Math.Min(request.PageSize, 100);
+
+        var orders = await query
+            .OrderByDescending(x => x.Id)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        var totalPages = (int)Math.Ceiling(
+            totalCount / (double)pageSize);
+
+        return new OrderListResponse
+        {
+            Items = orders
+                .Select(MapToResponse)
+                .ToList(),
+
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            TotalCount = totalCount,
+            TotalPages = totalPages
+        };
+    }
+
+    private static OrderResponse MapToResponse(Order order)
+    {
+        return new OrderResponse
+        {
+            Id = order.Id,
+            CustomerId = order.CustomerId,
+            OrderDate = order.OrderDate,
+            Status = order.Status,
+            TotalAmount = order.TotalAmount,
+            CreatedAt = order.CreatedAt,
+
+            Items = order.Items
+                .Select(item => new OrderItemResponse
+                {
+                    Id = item.Id,
+                    ProductId = item.ProductId,
+                    Quantity = item.Quantity,
+                    UnitPrice = item.UnitPrice,
+                    TotalPrice = item.TotalPrice
+                })
+                .ToList()
+        };
     }
 
     public async Task AddAsync(

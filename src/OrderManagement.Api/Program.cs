@@ -2,6 +2,7 @@ using OrderManagement.Application.Services.Customers;
 using OrderManagement.Application.Services.Orders;
 using OrderManagement.Application.Services.Products;
 using OrderManagement.Infrastructure.DependencyInjection;
+using OrderManagement.Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +21,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
