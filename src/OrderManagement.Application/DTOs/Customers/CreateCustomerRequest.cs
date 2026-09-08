@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace OrderManagement.Application.DTOs.Customers;
 
-namespace OrderManagement.Application.DTOs.Customers
+public class CreateCustomerRequest
 {
-    internal class CreateCustomerRequest
-    {
-    }
+    public string Name { get; set; } = null!;
+    public string Email { get; set; } = null!;
 }

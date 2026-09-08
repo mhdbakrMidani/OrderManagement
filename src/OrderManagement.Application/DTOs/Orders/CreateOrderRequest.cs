@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace OrderManagement.Application.DTOs.Orders;
 
-namespace OrderManagement.Application.DTOs.Orders
+public class CreateOrderRequest
 {
-    internal class CreateOrderRequest
-    {
-    }
+    public int CustomerId { get; set; }
+    public List<CreateOrderItemRequest> Items { get; set; } = [];
 }
